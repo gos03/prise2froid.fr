@@ -1,3 +1,26 @@
+(function initGoogleAdsTag(){
+  const adsId='AW-18366684334';
+  const hadGtag=typeof window.gtag==='function';
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};
+
+  const hasGoogleTagScript=[...document.scripts].some(script=>
+    script.src&&script.src.includes('googletagmanager.com/gtag/js')
+  );
+
+  if(!hasGoogleTagScript){
+    const script=document.createElement('script');
+    script.async=true;
+    script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(adsId);
+    document.head.appendChild(script);
+  }
+
+  if(!hadGtag){
+    window.gtag('js',new Date());
+  }
+  window.gtag('config',adsId);
+})();
+
 function openLightbox(src){
   const l=document.getElementById('lightbox');
   document.getElementById('lightbox-img').src=src;
