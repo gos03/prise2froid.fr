@@ -34,6 +34,15 @@ function setFormStatus(form,message,type){
   }
 }
 
+function trackGoogleAdsLead(){
+  if(typeof window.gtag!=='function')return;
+  window.gtag('event','conversion',{
+    'send_to':'AW-18366684334/v8R5CMz88O4cEK659bVE',
+    'value':1.0,
+    'currency':'EUR'
+  });
+}
+
 async function submitForm(e){
   e.preventDefault();
 
@@ -67,6 +76,7 @@ async function submitForm(e){
       throw new Error('Formspree error');
     }
 
+    trackGoogleAdsLead();
     form.reset();
     setFormStatus(
       form,
