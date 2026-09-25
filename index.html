@@ -8,8 +8,29 @@
   gtag('config', 'AW-18366684334');
 </script>
 <script>
+  function updateGoogleAdsPhoneLinks(formattedNumber, mobileNumber) {
+    if (!formattedNumber || !mobileNumber) return;
+    function updateLinks() {
+      document.querySelectorAll('a[href="tel:0663994335"]').forEach(function(link) {
+        link.href = 'tel:' + mobileNumber;
+        var textNodes = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+        var node;
+        while ((node = textNodes.nextNode())) {
+          if (node.nodeValue.trim() === '06 63 99 43 35') {
+            node.nodeValue = formattedNumber;
+          }
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateLinks, {once: true});
+    } else {
+      updateLinks();
+    }
+  }
   gtag('config', 'AW-18366684334/EpwpCKqpjIUdEK659bVE', {
-    'phone_conversion_number': '0663994335'
+    'phone_conversion_number': '06 63 99 43 35',
+    'phone_conversion_callback': updateGoogleAdsPhoneLinks
   });
 </script></head><body>
 <header class="header"><div class="container header-inner"><a class="brand" href="#top"><img src="images/logo-officiel-transparent.svg" alt="Prise 2 Froid"></a><div class="header-hook"><strong>VOTRE CONFORT,<br>SANS ATTENDRE.</strong><span>Installation rapide • Devis gratuit</span><em>Un artisan local près de chez vous</em></div><a class="phonebox" href="tel:0663994335"><strong>06 63 99 43 35</strong><span>APPEL GRATUIT</span></a></div></header>
