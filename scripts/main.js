@@ -1,3 +1,93 @@
+// La source de la dernière campagne reconnue reste disponible pendant cette session.
+const ATTRIBUTION_KEY='p2f_ad_source';
+const CONSENT_KEY='p2f_ads_consent';
+let advertisingConsent=false;
+let googleTagLoaded=false;
+let metaPixelLoaded=false;
+
+function getLeadSource(){
+  const params=new URLSearchParams(window.location.search);
+  const utm=(params.get('utm_source')||'').toLowerCase();
+  let source=null;
+  if(utm==='meta'||utm==='facebook'||utm==='instagram')source='Meta Ads';
+  else if(utm==='google'||params.has('gclid')||params.has('gbraid')||params.has('wbraid'))source='Google Ads';
+  else if(utm)source='Autre campagne';
+  if(source){
+    try{sessionStorage.setItem(ATTRIBUTION_KEY,source);}catch(error){}
+    return source;
+  }
+  try{return sessionStorage.getItem(ATTRIBUTION_KEY)||'Direct / autre';}
+  catch(error){return 'Direct / autre';}
+}
+const leadSource=getLeadSource();
+
+function updateGoogleAdsPhoneLinks(formattedNumber,mobileNumber){
+  if(!formattedNumber||!mobileNumber)return;
+  document.querySelectorAll('a[href="tel:0663994335"]').forEach(link=>{
+    link.href='tel:'+mobileNumber;
+    const textNodes=document.createTreeWalker(link,NodeFilter.SHOW_TEXT);
+    let node;
+    while((node=textNodes.nextNode())){
+      if(node.nodeValue.trim()==='06 63 99 43 35')node.nodeValue=formattedNumber;
+    }
+  });
+}
+
+function loadGoogleAds(){
+  // Une arrivée Meta ne charge pas le suivi des appels Google de cette visite.
+  if(googleTagLoaded||leadSource==='Meta Ads')return;
+  googleTagLoaded=true;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){window.dataLayer.push(arguments);};
+  window.gtag('js',new Date());
+  window.gtag('config','AW-18366684334');
+  window.gtag('config','AW-18366684334/EpwpCKqpjIUdEK659bVE',{
+    phone_conversion_number:'06 63 99 43 35',
+    phone_conversion_callback:updateGoogleAdsPhoneLinks
+  });
+  const script=document.createElement('script');
+  script.async=true;
+  script.src='https://www.googletagmanager.com/gtag/js?id=AW-18366684334';
+  document.head.appendChild(script);
+}
+
+function loadMetaPixel(){
+  const id=String(window.P2F_META_PIXEL_ID||'').trim();
+  if(metaPixelLoaded||!/^\d{8,20}$/.test(id))return;
+  metaPixelLoaded=true;
+  const fbq=window.fbq=function(){fbq.callMethod?fbq.callMethod.apply(fbq,arguments):fbq.queue.push(arguments);};
+  fbq.queue=[];fbq.loaded=true;fbq.version='2.0';
+  window._fbq=fbq;
+  fbq('init',id);
+  fbq('track','PageView');
+  const script=document.createElement('script');
+  script.async=true;
+  script.src='https://connect.facebook.net/en_US/fbevents.js';
+  document.head.appendChild(script);
+}
+
+function setAdvertisingConsent(accepted){
+  try{localStorage.setItem(CONSENT_KEY,accepted?'accepted':'rejected');}catch(error){}
+  if(!accepted&&advertisingConsent){
+    // Les bibliothèques déjà chargées ne peuvent pas être retirées sans recharger la page.
+    window.location.reload();
+    return;
+  }
+  advertisingConsent=accepted;
+  document.getElementById('trackingConsent').hidden=true;
+  if(accepted){loadGoogleAds();loadMetaPixel();}
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const panel=document.getElementById('trackingConsent');
+  let choice=null;
+  try{choice=localStorage.getItem(CONSENT_KEY);}catch(error){}
+  document.getElementById('trackingSettings').addEventListener('click',()=>{panel.hidden=false;});
+  document.getElementById('trackingReject').addEventListener('click',()=>setAdvertisingConsent(false));
+  document.getElementById('trackingAccept').addEventListener('click',()=>setAdvertisingConsent(true));
+  if(choice==='accepted')setAdvertisingConsent(true);
+  else if(choice!=='rejected')panel.hidden=false;
+});
+
 function openLightbox(src){
   const l=document.getElementById('lightbox');
   document.getElementById('lightbox-img').src=src;
@@ -35,7 +125,7 @@ function setFormStatus(form,message,type){
 }
 
 function trackGoogleAdsLead(){
-  if(typeof window.gtag!=='function')return;
+  if(!advertisingConsent||leadSource!=='Google Ads'||typeof window.gtag!=='function')return;
   window.gtag('event','conversion',{
     'send_to':'AW-18366684334/v8R5CMz88O4cEK659bVE',
     'value':1.0,
@@ -43,16 +133,23 @@ function trackGoogleAdsLead(){
   });
 }
 
+function trackMetaLead(){
+  if(advertisingConsent&&metaPixelLoaded&&typeof window.fbq==='function')window.fbq('track','Lead');
+}
+
 async function submitForm(e){
   e.preventDefault();
 
   const form=e.target;
+  if(form.dataset.submitting==='true')return;
+  form.dataset.submitting='true';
   const data=new FormData(form);
   const telephone=(data.get('telephone')||'').trim();
   const email=(data.get('email')||'').trim();
 
   if(!telephone&&!email){
     setFormStatus(form,'Merci d’indiquer un numéro de téléphone ou une adresse e-mail.','error');
+    form.dataset.submitting='false';
     return;
   }
 
@@ -63,7 +160,8 @@ async function submitForm(e){
     button.textContent='ENVOI EN COURS…';
   }
 
-  data.append('_subject','Nouvelle demande de contact - '+(data.get('nom')||'Site Prise 2 Froid'));
+  data.set('source',leadSource);
+  data.set('_subject','Nouvelle demande de contact - Source : '+leadSource+' - '+(data.get('nom')||'Site Prise 2 Froid'));
 
   try{
     const response=await fetch('https://formspree.io/f/xdeodjjg',{
@@ -77,6 +175,7 @@ async function submitForm(e){
     }
 
     trackGoogleAdsLead();
+    trackMetaLead();
     form.reset();
     setFormStatus(
       form,
@@ -90,6 +189,7 @@ async function submitForm(e){
       'error'
     );
   }finally{
+    form.dataset.submitting='false';
     if(button){
       button.disabled=false;
       button.textContent=initialText;
