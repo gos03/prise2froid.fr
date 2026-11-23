@@ -106,3 +106,42 @@
 .tracking-consent>div{display:flex;justify-content:flex-end;gap:10px}
 .tracking-consent button{cursor:pointer;border:1px solid #081c3a;border-radius:7px;padding:9px 15px;background:white;color:#081c3a;font-weight:bold}
 .tracking-consent #trackingAccept{background:#081c3a;color:white}
+
+@media (max-width: 600px) {
+  .hero {
+    height: auto;
+    background: #f7f4ee;
+  }
+
+  .hero::before {
+    content: "";
+    display: block;
+    height: clamp(180px, 54vw, 300px);
+    background: url('../images/hero-premium.png') right center / cover no-repeat;
+  }
+
+  .hero-inner {
+    height: auto;
+    display: block;
+    padding: 20px 0 24px;
+  }
+
+  .hero-copy {
+    padding: 0;
+    background: transparent;
+  }
+
+  .hero h1 {
+    font-size: clamp(24px, 6.4vw, 36px);
+    text-shadow: none;
+  }
+
+  .hero-pill {
+    padding: 0;
+    background: transparent;
+  }
+
+  .solutions .pac-card {
+    display: none;
+  }
+}
