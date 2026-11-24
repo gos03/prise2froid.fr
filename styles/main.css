@@ -151,3 +151,66 @@
 .pac-discovery .pac-card {
   display: block;
 }
+
+/* Flyer de saison et galerie */
+.flyer-section { padding: clamp(24px, 4vw, 48px) 0; background: #fff; }
+.flyer-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-areas: "image copy" "image actions";
+  column-gap: clamp(24px, 4vw, 56px);
+  row-gap: 20px;
+  padding: clamp(20px, 3vw, 32px);
+  background: #fbf7f0;
+  border: 1px solid #eee4d7;
+  border-radius: 18px;
+}
+.flyer-feature-image { grid-area: image; display: block; width: 100%; height: auto; align-self: center; border-radius: 12px; }
+.flyer-copy { grid-area: copy; align-self: end; }
+.flyer-copy .flyer-label { color: #b71628; font-weight: 800; margin: 0 0 10px; }
+.flyer-copy h2 { margin: 0; font-size: clamp(29px, 4.1vw, 49px); line-height: 1.06; }
+.flyer-location { margin: 14px 0 0; color: #516077; font-size: 17px; }
+.flyer-actions { grid-area: actions; display: flex; flex-wrap: wrap; align-items: center; align-self: start; gap: 12px 20px; }
+.flyer-gallery-trigger {
+  padding: 12px 0;
+  background: transparent;
+  border: 0;
+  color: #081c3a;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font: 700 16px Arial, sans-serif;
+  cursor: pointer;
+}
+.flyer-gallery {
+  width: min(950px, calc(100% - 24px));
+  max-height: calc(100vh - 32px);
+  padding: clamp(14px, 3vw, 28px);
+  color: #081c3a;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  overscroll-behavior: contain;
+}
+.flyer-gallery::backdrop { background: #081c3abf; }
+.flyer-gallery-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.flyer-gallery-header h2 { margin: 0; }
+.flyer-gallery-header button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #cbd2dc;
+  border-radius: 8px;
+  color: #081c3a;
+  background: #fff;
+  font: 700 16px Arial, sans-serif;
+  cursor: pointer;
+}
+.flyer-grid { list-style: none; padding: 0; margin: 20px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.flyer-grid a { display: flex; height: 100%; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid #e4e7ec; border-radius: 10px; color: inherit; text-underline-offset: 3px; }
+.flyer-grid img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.flyer-grid span { padding: 0 3px 5px; font-size: 15px; }
+@media (max-width: 700px) {
+  .flyer-feature { grid-template-columns: minmax(0, 1fr); grid-template-areas: "copy" "image" "actions"; text-align: center; row-gap: 14px; }
+  .flyer-feature-image { max-width: 420px; justify-self: center; }
+  .flyer-actions { flex-direction: column; gap: 0; }
+  .flyer-actions .btn { width: min(100%, 420px); }
+  .flyer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
